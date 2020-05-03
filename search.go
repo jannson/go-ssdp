@@ -138,6 +138,7 @@ func parseService(addr net.Addr, data []byte) (*Service, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	resp.Header.Set("SERVER_ADDR", addr.String())
 	return &Service{
 		Type:      resp.Header.Get("ST"),
 		USN:       resp.Header.Get("USN"),
