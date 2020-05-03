@@ -128,7 +128,7 @@ func (a *Advertiser) handleRaw(from net.Addr, raw []byte) error {
 func buildOK(st, usn, location, server string, maxAge int) ([]byte, error) {
 	b := new(bytes.Buffer)
 	// FIXME: error should be checked.
-	b.WriteString("HTTP/1.1 200 OK\r\n")
+	b.WriteString("HTTP/1.1 200 OK\r\nEXT: \r\n")
 	fmt.Fprintf(b, "ST: %s\r\n", st)
 	fmt.Fprintf(b, "USN: %s\r\n", usn)
 	if location != "" {
