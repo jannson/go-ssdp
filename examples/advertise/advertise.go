@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/koron/go-ssdp"
+	"github.com/jannson/go-ssdp"
 )
 
 func main() {

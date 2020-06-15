@@ -2,6 +2,7 @@ package ssdp
 
 import (
 	"net"
+	"runtime"
 	"sync"
 )
 
@@ -38,9 +39,16 @@ func interfacesIPv4() ([]net.Interface, error) {
 	}
 	list := make([]net.Interface, 0, len(iflist))
 	for _, ifi := range iflist {
-		if !hasLinkUp(&ifi) || !hasIPv4Address(&ifi) {
+
+		if runtime.GOOS != "windows" && (ifi.Flags&net.FlagUp == 0 || ifi.Flags&net.FlagMulticast == 0) {
 			continue
 		}
+		if !hasIPv4Address(&ifi) {
+			continue
+		}
+		//if !hasLinkUp(&ifi) || !hasIPv4Address(&ifi) {
+		//	continue
+		//}
 		list = append(list, ifi)
 	}
 	return list, nil

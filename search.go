@@ -81,6 +81,7 @@ func Search(searchType string, waitSec int, localAddr string) ([]Service, error)
 		return nil, err
 	}
 	if _, err := conn.WriteTo(msg, ssdpAddrIPv4); err != nil {
+		logf("writeTo failed, err=%s", err)
 		return nil, err
 	}
 

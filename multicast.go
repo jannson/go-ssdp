@@ -32,7 +32,7 @@ func multicastListen(localAddr string) (*multicastConn, error) {
 		conn.Close()
 		return nil, err
 	}
-	pconn, err := joinGroupIPv4(conn, iflist, ssdpAddrIPv4)
+	pconn, ifValids, err := joinGroupIPv4(conn, iflist, ssdpAddrIPv4)
 	if err != nil {
 		conn.Close()
 		return nil, err
@@ -41,28 +41,33 @@ func multicastListen(localAddr string) (*multicastConn, error) {
 		laddr:  laddr,
 		conn:   conn,
 		pconn:  pconn,
-		iflist: iflist,
+		iflist: ifValids,
 	}, nil
 }
 
 // joinGroupIPv4 makes the connection join to a group on interfaces.
-func joinGroupIPv4(conn *net.UDPConn, iflist []net.Interface, gaddr net.Addr) (*ipv4.PacketConn, error) {
+func joinGroupIPv4(conn *net.UDPConn, iflist []net.Interface, gaddr net.Addr) (*ipv4.PacketConn, []net.Interface, error) {
 	wrap := ipv4.NewPacketConn(conn)
 	wrap.SetMulticastLoopback(true)
 	// add interfaces to multicast group.
 	joined := 0
+	out := make([]net.Interface, 0, len(iflist))
 	for _, ifi := range iflist {
+		//if ifi.Flags&net.FlagUp == 0 || ifi.Flags&net.FlagMulticast == 0 {
+		//	continue
+		//}
 		if err := wrap.JoinGroup(&ifi, gaddr); err != nil {
 			logf("failed to join group %s on %s: %s", gaddr.String(), ifi.Name, err)
 			continue
 		}
+		out = append(out, ifi)
 		joined++
 		logf("joined group %s on %s", gaddr.String(), ifi.Name)
 	}
 	if joined == 0 {
-		return nil, errors.New("no interfaces had joined to group")
+		return nil, nil, errors.New("no interfaces had joined to group")
 	}
-	return wrap, nil
+	return wrap, out, nil
 }
 
 func (mc *multicastConn) Close() error {
